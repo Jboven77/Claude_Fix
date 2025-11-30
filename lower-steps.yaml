@@ -18,6 +18,8 @@ api:
   encryption:
     key: "wCCSSEXoAghbIZ2Gmdr8sgaQaFd1cK2qSKHh3P6q2Mc="
 
+homeassistant:
+
 ota:
   - platform: esphome
     password: "2709128908f68863b5709e9c97e0b1a1"
