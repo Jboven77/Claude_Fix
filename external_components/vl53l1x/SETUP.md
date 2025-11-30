@@ -1,28 +1,35 @@
-# Local VL53L1X Component Setup
+# VL53L1X Component Setup
 
-Copy these files from your Averyy component:
+## Copy TO this folder in your ESPHome project:
+
+```
+external_components/vl53l1x/vl53l1x/
+```
+
+## Copy FROM your local files:
 
 ```
 C:\Users\jerem\Documents\ESPHOME_PROJECTS\EXTERNAL_COMPONENTS\vl53l1x\
 ```
 
-**IMPORTANT:** Create a subfolder named `vl53l1x` inside the vl53l1x folder first!
+## Files to copy (4 files):
 
-Your final structure should be:
+- `__init__.py`
+- `sensor.py`
+- `vl53l1x.cpp`
+- `vl53l1x.h`
+
+**Done!** Your folder structure will look like:
 
 ```
 external_components/
   vl53l1x/
-    vl53l1x/           ← Create this subfolder
+    vl53l1x/
       __init__.py
       sensor.py
       vl53l1x.cpp
       vl53l1x.h
+      SETUP.md (this file)
 ```
 
-Steps:
-1. Create folder: `external_components/vl53l1x/vl53l1x/`
-2. Copy the 4 files into that subfolder
-3. Compile and flash
-
-Done!
+Then compile lower-steps.yaml in ESPHome.
