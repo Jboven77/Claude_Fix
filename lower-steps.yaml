@@ -34,7 +34,7 @@ captive_portal:
 external_components:
   - source:
       type: local
-      path: ./external_components/vl53l1x
+      path: C:\Users\jerem\Documents\ESPHOME_PROJECTS\EXTERNAL_COMPONENTS
     components: [vl53l1x]
 
 i2c:
