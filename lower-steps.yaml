@@ -31,9 +31,11 @@ wifi:
 
 captive_portal:
 
-# 🔹 External component from Averyy — this defines platform: vl53l1x
+# 🔹 External component — using local component files
 external_components:
-  - source: github://Averyy/esphome-custom-components
+  - source:
+      type: local
+      path: ./external_components/vl53l1x
     components: [vl53l1x]
 
 # 🔹 I2C configuration for VL53L1X
