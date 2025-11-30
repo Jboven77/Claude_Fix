@@ -45,7 +45,6 @@ i2c:
 
 vl53l1x:
   distance_mode: long
-  timing_budget: 66ms
   update_interval: 100ms
 
 sensor:
