@@ -18,8 +18,6 @@ logger:
 
 api:
 
-homeassistant:
-
 ota:
   - platform: esphome
     password: "2709128908f68863b5709e9c97e0b1a1"
