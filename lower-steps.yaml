@@ -6,14 +6,14 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   libraries:
-    - "pololu/VL53L1X"   # use the official Pololu driver
+    - "pololu/VL53L1X"
   includes:
-    - vl53l1x_custom.h   # our own sensor implementation
+    - vl53l1x_setup.h
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    type: arduino   # required by this component
+    type: arduino
 
 logger:
   level: DEBUG
@@ -23,7 +23,7 @@ api:
     key: "wCCSSEXoAghbIZ2Gmdr8sgaQaFd1cK2qSKHh3P6q2Mc="
 
 ota:
-  - platform: esphome   # DO NOT REMOVE
+  - platform: esphome
     password: "2709128908f68863b5709e9c97e0b1a1"
 
 wifi:
@@ -41,20 +41,18 @@ i2c:
   scan: true
   frequency: 400kHz
 
-# Our custom VL53L1X sensor with Pololu library
 sensor:
   - platform: custom
     lambda: |-
-      auto *tof = new VL53L1XCustomSensor();
-      App.register_component(tof);
-      return { tof->distance_sensor };
+      auto *tof_sensor = new VL53L1XSensor();
+      App.register_component(tof_sensor);
+      return {tof_sensor->distance_sensor};
     sensors:
       name: "Lower Steps Distance"
       id: lower_distance
       unit_of_measurement: "mm"
       accuracy_decimals: 0
       filters:
-        # we can tweak these after we see real numbers
         - throttle: 0.25s
 
   - platform: wifi_signal
