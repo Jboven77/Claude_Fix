@@ -15,6 +15,7 @@ logger:
   level: INFO
 
 api:
+  reboot_timeout: 0s
   encryption:
     key: "wCCSSEXoAghbIZ2Gmdr8sgaQaFd1cK2qSKHh3P6q2Mc="
 
@@ -47,7 +48,7 @@ i2c:
 
 vl53l1x:
   distance_mode: long
-  update_interval: 50ms
+  update_interval: 200ms
 
 sensor:
   - platform: vl53l1x
