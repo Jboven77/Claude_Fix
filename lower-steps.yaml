@@ -12,7 +12,7 @@ esp32:
     type: arduino
 
 logger:
-  level: DEBUG
+  level: INFO
 
 api:
   encryption:
@@ -45,7 +45,8 @@ i2c:
 
 vl53l1x:
   distance_mode: long
-  update_interval: 100ms
+  update_interval: 50ms
+  long_range: true
 
 sensor:
   - platform: vl53l1x
