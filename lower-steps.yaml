@@ -5,10 +5,6 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
-  libraries:
-    - "pololu/VL53L1X"
-  includes:
-    - vl53l1x_setup.h
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -35,25 +31,39 @@ wifi:
 
 captive_portal:
 
+external_components:
+  - source: github://Averyy/esphome-custom-components
+    components: [vl53l1x]
+
 i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
   frequency: 400kHz
 
+vl53l1x:
+  distance_mode: long
+  timing_budget: 66ms
+  update_interval: 100ms
+
 sensor:
-  - platform: custom
-    lambda: |-
-      auto *tof_sensor = new VL53L1XSensor();
-      App.register_component(tof_sensor);
-      return {tof_sensor->distance_sensor};
-    sensors:
+  - platform: vl53l1x
+    distance:
       name: "Lower Steps Distance"
-      id: lower_distance
+      id: lower_distance_mm
       unit_of_measurement: "mm"
       accuracy_decimals: 0
       filters:
-        - throttle: 0.25s
+        - lambda: |-
+            if (x < 50 || x > 4000 || std::isnan(x)) return {};
+            return x;
+        - median:
+            window_size: 5
+            send_every: 1
+            send_first_at: 1
+
+    range_status:
+      name: "Lower Steps Range Status"
 
   - platform: wifi_signal
     name: "Lower Steps WiFi Signal"
