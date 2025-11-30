@@ -12,7 +12,9 @@ esp32:
     type: arduino
 
 logger:
-  level: INFO
+  level: DEBUG
+  logs:
+    vl53l1x.sensor: DEBUG
 
 api:
 
