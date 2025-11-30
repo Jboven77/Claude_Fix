@@ -56,12 +56,8 @@ sensor:
       accuracy_decimals: 0
       filters:
         - lambda: |-
-            if (x < 50 || x > 4000 || std::isnan(x)) return {};
+            if (x < 10 || x > 4000 || std::isnan(x)) return {};
             return x;
-        - median:
-            window_size: 5
-            send_every: 1
-            send_first_at: 1
 
     range_status:
       name: "Lower Steps Range Status"
