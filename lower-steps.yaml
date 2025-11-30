@@ -15,9 +15,6 @@ logger:
   level: INFO
 
 api:
-  reboot_timeout: 0s
-  encryption:
-    key: "wCCSSEXoAghbIZ2Gmdr8sgaQaFd1cK2qSKHh3P6q2Mc="
 
 homeassistant:
 
@@ -28,6 +25,7 @@ ota:
 wifi:
   ssid: "BOVENS-MESH"
   password: "605506Jdb"
+  power_save_mode: none
   ap:
     ssid: "Lower-Steps Fallback"
     password: "12345678"
