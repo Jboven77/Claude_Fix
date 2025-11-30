@@ -46,7 +46,6 @@ i2c:
 vl53l1x:
   distance_mode: long
   update_interval: 50ms
-  long_range: true
 
 sensor:
   - platform: vl53l1x
