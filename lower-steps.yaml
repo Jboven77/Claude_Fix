@@ -1,0 +1,143 @@
+substitutions:
+  device_name: lower-steps
+  friendly_name: Lower-Steps
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino   # required by this component
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: "wCCSSEXoAghbIZ2Gmdr8sgaQaFd1cK2qSKHh3P6q2Mc="
+
+ota:
+  - platform: esphome   # DO NOT REMOVE
+    password: "2709128908f68863b5709e9c97e0b1a1"
+
+wifi:
+  ssid: "BOVENS-MESH"
+  password: "605506Jdb"
+  ap:
+    ssid: "Lower-Steps Fallback"
+    password: "12345678"
+
+captive_portal:
+
+# 🔹 External component from Averyy — this defines platform: vl53l1x
+external_components:
+  - source: github://Averyy/esphome-custom-components
+    components: [vl53l1x]
+
+# 🔹 I2C configuration for VL53L1X
+i2c:
+  sda: GPIO20
+  scl: GPIO21
+  scan: true
+  frequency: 400kHz
+
+# 🔹 VL53L1X sensor configuration optimized for 1300mm readings
+vl53l1x:
+  distance_mode: long           # Use long range mode (max ~4m)
+  timing_budget: 66ms           # 33ms, 50ms, or 66ms. 66ms gives best accuracy for long range
+  update_interval: 100ms        # Update every 100ms for responsive readings
+  address: 0x29                 # Default I2C address for VL53L1X
+
+sensor:
+  # 🔹 VL53L1X Distance Sensor
+  - platform: vl53l1x
+    distance:
+      name: "Lower Steps Distance"
+      id: lower_distance_mm
+      unit_of_measurement: "mm"
+      accuracy_decimals: 0
+      icon: "mdi:ruler"
+
+      # Filters to clean up readings for 1300mm range
+      filters:
+        # Remove invalid/out-of-range readings
+        - lambda: |-
+            // Range: 50-4000mm (safe for VL53L1X long range mode)
+            if (x < 50 || x > 4000 || std::isnan(x)) {
+              return {};  // Return empty to skip invalid readings
+            }
+            return x;
+
+        # Median filter to smooth noise (5-point median)
+        - median:
+            window_size: 5
+            send_every: 1
+            send_first_at: 1
+
+        # Low-pass filter for additional smoothing
+        - exponential_moving_average:
+            alpha: 0.5
+            send_every: 1
+
+    # Range status for debugging
+    range_status:
+      name: "Lower Steps Range Status"
+      id: range_status_id
+
+  # 🔹 WiFi Signal Strength
+  - platform: wifi_signal
+    name: "Lower Steps WiFi Signal"
+    update_interval: 60s
+    icon: "mdi:wifi"
+
+  # 🔹 Uptime Sensor (useful for monitoring)
+  - platform: uptime
+    name: "Lower Steps Uptime"
+    update_interval: 60s
+
+# 🔹 Binary Sensor Examples (optional - useful for automation)
+binary_sensor:
+  # Example: Object detected within 1500mm
+  - platform: template
+    name: "Stairs Occupied"
+    id: stairs_occupied
+    device_class: occupancy
+    lambda: |-
+      return id(lower_distance_mm).state < 1500;
+    update_interval: 100ms
+
+  # Example: Object too close (less than 500mm)
+  - platform: template
+    name: "Stairs Blocked"
+    id: stairs_blocked
+    device_class: problem
+    lambda: |-
+      return id(lower_distance_mm).state < 500;
+    update_interval: 100ms
+
+# 🔹 Text Sensor for Range Status Display
+text_sensor:
+  - platform: template
+    name: "Lower Steps Status"
+    id: steps_status
+    update_interval: 100ms
+    lambda: |-
+      float distance = id(lower_distance_mm).state;
+      if (std::isnan(distance) || distance == 0) {
+        return std::string("No reading");
+      } else if (distance < 500) {
+        return std::string("Too close");
+      } else if (distance < 1300) {
+        return std::string("Object approaching");
+      } else if (distance < 2000) {
+        return std::string("Within range");
+      } else {
+        return std::string("Far away");
+      }
+
+# 🔹 Home Assistant Integration
+homeassistant:
+  name: "Lower Steps Sensor"
+  area: "Stairs"
