@@ -18,10 +18,8 @@ logger:
 external_components:
   - source:
       type: git
-      url: https://github.com/stoglda/esphome-components
-      ref: main
+      url: https://github.com/ssieb/esphome_components
     components: [ vl53l1x ]
-    refresh: 1d
 
 api:
   encryption:
