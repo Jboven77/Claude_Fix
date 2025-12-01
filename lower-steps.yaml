@@ -32,36 +32,24 @@ wifi:
 
 captive_portal:
 
-external_components:
-  - source:
-      type: local
-      path: C:\Users\jerem\Documents\ESPHOME_PROJECTS\EXTERNAL_COMPONENTS
-    components: [vl53l1x]
-
 i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
   frequency: 400kHz
 
-vl53l1x:
-  distance_mode: long
-  update_interval: 200ms
-
 sensor:
-  - platform: vl53l1x
-    distance:
-      name: "Lower Steps Distance"
-      id: lower_distance_mm
-      unit_of_measurement: "mm"
-      accuracy_decimals: 0
-      filters:
-        - lambda: |-
-            if (x < 10 || x > 4000 || std::isnan(x)) return {};
-            return x;
-
-    range_status:
-      name: "Lower Steps Range Status"
+  - platform: vl53l0x
+    name: "Lower Steps Distance"
+    id: lower_distance_mm
+    address: 0x29
+    update_interval: 200ms
+    accuracy_decimals: 0
+    unit_of_measurement: "mm"
+    filters:
+      - lambda: |-
+          if (x < 10 || x > 2000 || std::isnan(x)) return {};
+          return x;
 
   - platform: wifi_signal
     name: "Lower Steps WiFi Signal"
