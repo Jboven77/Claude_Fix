@@ -5,6 +5,10 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  libraries:
+    - "pololu/VL53L1X@1.3.1"
+  includes:
+    - vl53l1x_sensor.h
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -36,18 +40,40 @@ i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
+  frequency: 400kHz
 
 sensor:
-  - platform: vl53l0x
-    name: "Distance"
+  - platform: custom
+    lambda: |-
+      auto vl53 = new VL53L1XSensor();
+      App.register_component(vl53);
+      return {vl53};
+    sensors:
+      - name: "Distance"
+        id: distance
+        unit_of_measurement: "m"
+        accuracy_decimals: 2
+        device_class: "distance"
+        state_class: "measurement"
+        filters:
+          - lambda: return x / 1000.0;
 
   - platform: wifi_signal
     name: "WiFi Signal"
     update_interval: 60s
 
 binary_sensor:
-  - platform: status
-    name: "Status"
+  - platform: template
+    id: step_occupied
+    name: "Step Occupied"
+    lambda: |-
+      if (id(distance).has_state()) {
+        return id(distance).state < 1.02;
+      }
+      return false;
+    filters:
+      - delayed_on: 100ms
+      - delayed_off: 500ms
 
 text_sensor:
   - platform: version
