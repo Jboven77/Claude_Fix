@@ -16,8 +16,12 @@ logger:
 
 # External component to enable VL53L1X support
 external_components:
-  - source: github://pr#7846
+  - source:
+      type: git
+      url: https://github.com/stoglda/esphome-components
+      ref: main
     components: [ vl53l1x ]
+    refresh: 1d
 
 api:
   encryption:
