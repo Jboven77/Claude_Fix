@@ -1,6 +1,6 @@
 substitutions:
-  device_name: lower-steps
-  friendly_name: Lower-Steps
+  device_name: tof-doesnt-matter
+  friendly_name: TOF-DOESNT-MATTER
 
 esphome:
   name: ${device_name}
