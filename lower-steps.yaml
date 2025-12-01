@@ -14,13 +14,6 @@ esp32:
 logger:
   level: DEBUG
 
-# External component to enable VL53L1X support
-external_components:
-  - source:
-      type: git
-      url: https://github.com/ssieb/esphome_components
-    components: [ vl53l1x ]
-
 api:
   encryption:
     key: "+6lkh+FkWq3HVFh6+NukfmN188wGMQap7sw2RK1p9Gg="
@@ -43,17 +36,16 @@ i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
-  frequency: 100kHz  # Reduced from 400kHz for better stability
+  frequency: 400kHz
 
 sensor:
-  # VL53L1X with external component (longer range, up to 4m)
-  - platform: vl53l1x
+  - platform: vl53l0x
     id: lower_distance
     name: "Distance"
     address: 0x29
     update_interval: 1s
-    unit_of_measurement: "m"
-    accuracy_decimals: 2
+    long_range: false
+    timeout: 10ms
 
   - platform: wifi_signal
     name: "WiFi Signal"
@@ -67,11 +59,10 @@ binary_sensor:
       if (isnan(id(lower_distance).state)) {
         return false;
       }
-      // Trigger when distance is less than 1.02 meters (102 cm)
       return id(lower_distance).state < 1.02;
     filters:
-      - delayed_on: 100ms  # Debounce - must be occupied for 100ms
-      - delayed_off: 500ms  # Stay on for 500ms after no longer detected
+      - delayed_on: 100ms
+      - delayed_off: 500ms
 
 text_sensor:
   - platform: version
