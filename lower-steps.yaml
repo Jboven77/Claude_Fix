@@ -39,32 +39,11 @@ i2c:
   frequency: 100kHz  # Reduced from 400kHz for better stability
 
 sensor:
-  # VL53L0X didn't work - switching to VL53L1X (newer sensor, up to 4m range)
-  # - platform: vl53l0x
-  #   id: lower_distance
-  #   name: "Distance"
-  #   address: 0x29
-  #   update_interval: 1s
-  #   signal_rate_limit: 0.1
-  #   unit_of_measurement: "m"
-  #   accuracy_decimals: 2
-  #   filters:
-  #     - sliding_window_moving_average:
-  #         window_size: 3
-  #         send_every: 1
-
-  # Using VL53L1X instead (this is likely the correct sensor for VL53L0/1XV2 modules)
-  - platform: vl53l1x
+  # Minimal VL53L0X configuration - no optional parameters
+  - platform: vl53l0x
     id: lower_distance
     name: "Distance"
-    address: 0x29
     update_interval: 1s
-    unit_of_measurement: "m"
-    accuracy_decimals: 2
-    filters:
-      - sliding_window_moving_average:
-          window_size: 3
-          send_every: 1
 
   - platform: wifi_signal
     name: "WiFi Signal"
