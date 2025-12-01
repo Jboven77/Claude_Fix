@@ -39,20 +39,33 @@ i2c:
   frequency: 100kHz  # Reduced from 400kHz for better stability
 
 sensor:
+  # Try VL53L0X first (standard range up to 1.2m)
   - platform: vl53l0x
     id: lower_distance
     name: "Distance"
     address: 0x29
     update_interval: 1s
-    long_range: true
-    signal_rate_limit: 0.25  # REQUIRED - default is 0.25 MCPS
-    timeout: 200ms
+    # Do NOT use long_range with signal_rate_limit - they conflict
+    signal_rate_limit: 0.1  # Try lower value: 0.1, 0.25, or 0.5
     unit_of_measurement: "m"
     accuracy_decimals: 2
     filters:
       - sliding_window_moving_average:
           window_size: 3
           send_every: 1
+
+  # If VL53L0X doesn't work, try VL53L1X instead (uncomment below and comment out above)
+  # - platform: vl53l1x
+  #   id: lower_distance
+  #   name: "Distance"
+  #   address: 0x29
+  #   update_interval: 1s
+  #   unit_of_measurement: "m"
+  #   accuracy_decimals: 2
+  #   filters:
+  #     - sliding_window_moving_average:
+  #         window_size: 3
+  #         send_every: 1
 
   - platform: wifi_signal
     name: "WiFi Signal"
