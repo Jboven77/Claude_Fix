@@ -1,6 +1,6 @@
 substitutions:
-  device_name: lower-steps-sensor
-  friendly_name: Lower Steps Sensor
+  device_name: tof-doesnt-matter
+  friendly_name: TOF-DOESNT-MATTER
   # Detection threshold in meters (adjust based on your step height/depth)
   detection_threshold: "1.02"
 
@@ -16,7 +16,7 @@ esp32:
 
 # Logger - set to INFO for production, DEBUG for troubleshooting
 logger:
-  level: INFO
+  level: DEBUG
 
 # Home Assistant API
 api:
@@ -47,7 +47,6 @@ i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
-  frequency: 400kHz
 
 # Sensors
 sensor:
