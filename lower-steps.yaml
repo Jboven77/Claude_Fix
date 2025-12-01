@@ -13,14 +13,14 @@ esp32:
 
 logger:
   level: DEBUG
-  logs:
-    vl53l1x.sensor: DEBUG
 
 api:
+  encryption:
+    key: "+6lkh+FkWq3HVFh6+NukfmN188wGMQap7sw2RK1p9Gg="
 
 ota:
   - platform: esphome
-    password: "2709128908f68863b5709e9c97e0b1a1"
+    password: "48170f28ed94e6fe392d67906b01ff74"
 
 wifi:
   ssid: "BOVENS-MESH"
@@ -40,17 +40,31 @@ i2c:
 
 sensor:
   - platform: vl53l0x
-    name: "Lower Steps Distance"
-    id: lower_distance_mm
-    address: 0x29
+    id: lower_distance
+    name: "Distance"
     update_interval: 200ms
-    accuracy_decimals: 0
-    unit_of_measurement: "mm"
-    filters:
-      - lambda: |-
-          if (x < 10 || x > 2000 || std::isnan(x)) return {};
-          return x;
+    long_range: true
+    timeout: 50ms
+    accuracy_decimals: 2
 
   - platform: wifi_signal
-    name: "Lower Steps WiFi Signal"
+    name: "WiFi Signal"
     update_interval: 60s
+
+binary_sensor:
+  - platform: template
+    id: step_occupied
+    name: "Step Occupied"
+    lambda: |-
+      if (isnan(id(lower_distance).state)) {
+        return false;
+      }
+      return id(lower_distance).state < 1.02;
+
+text_sensor:
+  - platform: version
+    name: "ESPHome Version"
+
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
