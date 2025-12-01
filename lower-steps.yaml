@@ -42,17 +42,17 @@ sensor:
   - platform: vl53l0x
     id: lower_distance
     name: "Distance"
-    address: 0x29  # Explicit I2C address
-    update_interval: 500ms  # Increased from 200ms for stability
-    # long_range: true  # Disabled for testing - enable if you need >1.2m range
-    # timeout: 200ms  # Increased timeout (uncomment if needed)
+    address: 0x29
+    update_interval: 1s
+    long_range: true
+    signal_rate_limit: 0.25  # REQUIRED - default is 0.25 MCPS
+    timeout: 200ms
     unit_of_measurement: "m"
     accuracy_decimals: 2
     filters:
       - sliding_window_moving_average:
-          window_size: 5
+          window_size: 3
           send_every: 1
-      - heartbeat: 2s  # Limit updates to once per 2 seconds
 
   - platform: wifi_signal
     name: "WiFi Signal"
