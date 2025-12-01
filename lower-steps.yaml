@@ -1,70 +1,199 @@
 substitutions:
-  device_name: tof-doesnt-matter
-  friendly_name: TOF-DOESNT-MATTER
+  device_name: lower-steps-sensor
+  friendly_name: Lower Steps Sensor
+  # Detection threshold in meters (adjust based on your step height/depth)
+  detection_threshold: "1.02"
 
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  comment: "VL53L0X ToF Distance Sensor for Step Occupancy Detection"
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: arduino
 
+# Logger - set to INFO for production, DEBUG for troubleshooting
 logger:
-  level: DEBUG
+  level: INFO
 
+# Home Assistant API
 api:
   encryption:
     key: "+6lkh+FkWq3HVFh6+NukfmN188wGMQap7sw2RK1p9Gg="
 
+# OTA Updates
 ota:
   - platform: esphome
     password: "48170f28ed94e6fe392d67906b01ff74"
 
+# WiFi Configuration
 wifi:
   ssid: "BOVENS-MESH"
   password: "605506Jdb"
   power_save_mode: none
+
+  # Enable fallback hotspot in case wifi connection fails
   ap:
     ssid: "Lower-Steps Fallback"
     password: "12345678"
 
 captive_portal:
 
+# I2C Bus Configuration for VL53L0X
+# VL53L0X default address: 0x29
 i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
   frequency: 400kHz
 
+# Sensors
 sensor:
+  # VL53L0X Time-of-Flight Distance Sensor
+  # Range: 40mm - 4000mm (4m max)
+  # Accuracy: ±1mm
+  # Max sampling: 50Hz (20ms)
   - platform: vl53l0x
     id: lower_distance
-    name: "Distance"
-    update_interval: 200ms
-    long_range: true
-    timeout: 50ms
-    accuracy_decimals: 2
+    name: "Step Distance"
+    address: 0x29
+    update_interval: 100ms  # 10Hz - good balance of responsiveness and power
+    long_range: true        # Enable full 4m range
+    timeout: 200ms          # Increased timeout for reliability
+    unit_of_measurement: "m"
+    accuracy_decimals: 3
+    filters:
+      # Remove outliers - if reading jumps more than 0.5m, ignore it
+      - filter_out: nan
+      - lambda: |-
+          static float last_valid = x;
+          if (abs(x - last_valid) > 0.5) {
+            return last_valid;
+          }
+          last_valid = x;
+          return x;
+      # Sliding window median filter to reduce noise (5 samples)
+      - median:
+          window_size: 5
+          send_every: 1
+          send_first_at: 3
+      # Round to nearest millimeter
+      - lambda: return round(x * 1000) / 1000.0;
 
+  # WiFi Signal Strength
   - platform: wifi_signal
     name: "WiFi Signal"
     update_interval: 60s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 5
 
+  # Device Uptime
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+# Binary Sensors
 binary_sensor:
+  # Main occupancy sensor with hysteresis
   - platform: template
     id: step_occupied
     name: "Step Occupied"
+    device_class: occupancy
+    lambda: |-
+      static bool last_state = false;
+
+      // Check for valid reading
+      if (isnan(id(lower_distance).state)) {
+        return last_state;  // Maintain last state if reading is invalid
+      }
+
+      float distance = id(lower_distance).state;
+      float threshold = ${detection_threshold};
+
+      // Hysteresis: 5cm buffer to prevent flickering
+      // Occupied when < threshold, clear when > threshold + 0.05m
+      if (distance < threshold) {
+        last_state = true;
+      } else if (distance > (threshold + 0.05)) {
+        last_state = false;
+      }
+
+      return last_state;
+    filters:
+      # Debounce: require state to be stable for 200ms before reporting change
+      - delayed_on: 200ms
+      - delayed_off: 500ms  # Longer off delay to prevent brief interruptions
+
+  # Close proximity alert (something very close - < 20cm)
+  - platform: template
+    id: step_close_proximity
+    name: "Step Close Proximity"
     lambda: |-
       if (isnan(id(lower_distance).state)) {
         return false;
       }
-      return id(lower_distance).state < 1.02;
+      return id(lower_distance).state < 0.20;
+    filters:
+      - delayed_on: 100ms
+      - delayed_off: 100ms
 
+  # Connection status
+  - platform: status
+    name: "Status"
+
+# Text Sensors
 text_sensor:
+  # ESPHome version
   - platform: version
     name: "ESPHome Version"
+    hide_timestamp: true
 
+  # WiFi info
   - platform: wifi_info
     ip_address:
       name: "IP Address"
+    ssid:
+      name: "Connected SSID"
+    mac_address:
+      name: "MAC Address"
+
+  # Distance status text
+  - platform: template
+    name: "Detection Status"
+    update_interval: 1s
+    lambda: |-
+      if (isnan(id(lower_distance).state)) {
+        return {"Sensor Error"};
+      }
+
+      float distance = id(lower_distance).state;
+
+      if (distance < 0.20) {
+        return {"Very Close"};
+      } else if (distance < 0.50) {
+        return {"Close"};
+      } else if (distance < 1.00) {
+        return {"Medium"};
+      } else if (distance < 2.00) {
+        return {"Far"};
+      } else {
+        return {"Very Far / Clear"};
+      }
+
+# Buttons for remote control
+button:
+  # Restart button
+  - platform: restart
+    name: "Restart"
+
+# Optional: Switches (uncomment if needed)
+# switch:
+#   # Toggle detection
+#   - platform: template
+#     name: "Enable Detection"
+#     optimistic: true
+#     restore_mode: RESTORE_DEFAULT_ON
