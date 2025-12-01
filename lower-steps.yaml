@@ -14,6 +14,11 @@ esp32:
 logger:
   level: DEBUG
 
+# External component to enable VL53L1X support
+external_components:
+  - source: github://pr#7846
+    components: [ vl53l1x ]
+
 api:
   encryption:
     key: "+6lkh+FkWq3HVFh6+NukfmN188wGMQap7sw2RK1p9Gg="
@@ -39,11 +44,14 @@ i2c:
   frequency: 100kHz  # Reduced from 400kHz for better stability
 
 sensor:
-  # Minimal VL53L0X configuration - no optional parameters
-  - platform: vl53l0x
+  # VL53L1X with external component (longer range, up to 4m)
+  - platform: vl53l1x
     id: lower_distance
     name: "Distance"
+    address: 0x29
     update_interval: 1s
+    unit_of_measurement: "m"
+    accuracy_decimals: 2
 
   - platform: wifi_signal
     name: "WiFi Signal"
