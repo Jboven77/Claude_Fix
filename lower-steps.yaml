@@ -64,7 +64,6 @@ sensor:
     address: 0x29
     update_interval: 100ms  # 10Hz - good balance of responsiveness and power
     long_range: true        # Enable full 4m range
-    timeout: 200ms          # Increased timeout for reliability
     unit_of_measurement: "m"
     accuracy_decimals: 3
     filters:
