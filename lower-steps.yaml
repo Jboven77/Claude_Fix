@@ -14,10 +14,6 @@ esp32:
 logger:
   level: DEBUG
 
-external_components:
-  - source: github://stoglda/esphome-vl53l1x
-    components: [ vl53l1x ]
-
 api:
   encryption:
     key: "+6lkh+FkWq3HVFh6+NukfmN188wGMQap7sw2RK1p9Gg="
@@ -40,31 +36,18 @@ i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
-  frequency: 400kHz
 
 sensor:
-  - platform: vl53l1x
-    id: lower_distance
+  - platform: vl53l0x
     name: "Distance"
-    address: 0x29
-    update_interval: 1s
 
   - platform: wifi_signal
     name: "WiFi Signal"
     update_interval: 60s
 
 binary_sensor:
-  - platform: template
-    id: step_occupied
-    name: "Step Occupied"
-    lambda: |-
-      if (isnan(id(lower_distance).state)) {
-        return false;
-      }
-      return id(lower_distance).state < 1.02;
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 500ms
+  - platform: status
+    name: "Status"
 
 text_sensor:
   - platform: version
