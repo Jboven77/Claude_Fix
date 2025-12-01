@@ -36,16 +36,23 @@ i2c:
   sda: GPIO20
   scl: GPIO21
   scan: true
-  frequency: 400kHz
+  frequency: 100kHz  # Reduced from 400kHz for better stability
 
 sensor:
   - platform: vl53l0x
     id: lower_distance
     name: "Distance"
-    update_interval: 200ms
-    long_range: true
-    timeout: 50ms
+    address: 0x29  # Explicit I2C address
+    update_interval: 500ms  # Increased from 200ms for stability
+    # long_range: true  # Disabled for testing - enable if you need >1.2m range
+    # timeout: 200ms  # Increased timeout (uncomment if needed)
+    unit_of_measurement: "m"
     accuracy_decimals: 2
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 1
+      - heartbeat: 2s  # Limit updates to once per 2 seconds
 
   - platform: wifi_signal
     name: "WiFi Signal"
@@ -59,7 +66,11 @@ binary_sensor:
       if (isnan(id(lower_distance).state)) {
         return false;
       }
+      // Trigger when distance is less than 1.02 meters (102 cm)
       return id(lower_distance).state < 1.02;
+    filters:
+      - delayed_on: 100ms  # Debounce - must be occupied for 100ms
+      - delayed_off: 500ms  # Stay on for 500ms after no longer detected
 
 text_sensor:
   - platform: version
